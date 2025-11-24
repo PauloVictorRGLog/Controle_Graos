@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}{{ container.numero_container }} - Sistema de Controle{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Container <span class="container-number">{{ container.numero_container }}</span></h1>
+        <p class="page-subtitle">Detalhes e histórico de movimentação</p>
+    </div>
+    <a href="{{ url_for('containers') }}" class="btn btn-outline-secondary">
+        <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+        Voltar
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Informações do Container</h5>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Número:</td>
+                            <td><span class="container-number">{{ container.numero_container }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Tipo:</td>
+                            <td>{{ container.tipo }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Armador:</td>
+                            <td>{{ container.armador }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Status:</td>
+                            <td>
+                                <span class="status-badge {{ container.status }}">
+                                    <span class="dot"></span>
+                                    {% if container.status == 'portaria' %}Portaria
+                                    {% elif container.status == 'patio_cheio' %}Pátio Cheio
+                                    {% elif container.status == 'desova' %}Desova
+                                    {% elif container.status == 'patio_vazio' %}Pátio Vazio
+                                    {% elif container.status == 'liberado_saida' %}Liberado
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Local Atual:</td>
+                            <td>{{ container.local_atual.replace('_', ' ').title() }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Data Registro:</td>
+                            <td>{{ container.data_registro }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Última Atualização:</td>
+                            <td>{{ container.data_atualizacao }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="d-flex gap-2 mt-3">
+                    {% if container.status not in ['patio_vazio', 'liberado_saida'] %}
+                    <button class="btn btn-success" onclick="registrarDesova()">
+                        <span class="material-icons" style="font-size: 18px;">move_down</span>
+                        Registrar Desova
+                    </button>
+                    {% endif %}
+                    {% if container.status != 'liberado_saida' %}
+                    <button class="btn btn-warning" onclick="registrarSaida()">
+                        <span class="material-icons" style="font-size: 18px;">exit_to_app</span>
+                        Registrar Saída
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Histórico de Movimentações</h5>
+                
+                {% if historico %}
+                <div class="timeline">
+                    {% for mov in historico %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong>
+                                    {% if mov.tipo_movimento == 'entrada_portaria' %}
+                                        Entrada na Portaria
+                                    {% elif mov.tipo_movimento == 'desova' %}
+                                        Desova Realizada
+                                    {% elif mov.tipo_movimento == 'saida' %}
+                                        Saída Registrada
+                                    {% endif %}
+                                </strong>
+                                <small class="text-muted">{{ mov.data_movimento }}</small>
+                            </div>
+                            {% if mov.observacao %}
+                            <p class="mb-0 text-muted small">{{ mov.observacao }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhuma movimentação registrada.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function registrarDesova() {
+    const observacao = prompt('Observação (opcional):') || '';
+    
+    fetch('/containers/{{ container.id }}/desova', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `observacao=${encodeURIComponent(observacao)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao registrar desova');
+        console.error(error);
+    });
+}
+
+function registrarSaida() {
+    const observacao = prompt('Observação (opcional):') || '';
+    
+    fetch('/containers/{{ container.id }}/saida', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `observacao=${encodeURIComponent(observacao)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao registrar saída');
+        console.error(error);
+    });
+}
+</script>
+{% endblock %}

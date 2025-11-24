@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Acompanhamento de Notas - Sistema de Controle{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">Acompanhamento de Notas Fiscais</h1>
+        <p class="page-subtitle">Visualize todas as notas fiscais cadastradas</p>
+    </div>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary">
+        <span class="material-icons" style="font-size: 18px;">upload_file</span>
+        Upload NFe
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table id="notasTable" class="table table-hover">
+        <thead>
+            <tr>
+                <th>Número Nota</th>
+                <th>Data Emissão</th>
+                <th>Produto</th>
+                <th>Peso Total (kg)</th>
+                <th>Peso Carregado (kg)</th>
+                <th>Saldo (kg)</th>
+                <th>Valor (R$)</th>
+                <th>CTe</th>
+                <th>Data Carregamento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nota in notas %}
+            <tr>
+                <td><span class="container-number">{{ nota.numero_nota }}</span></td>
+                <td>{{ nota.data_emissao }}</td>
+                <td>{{ nota.produto }}</td>
+                <td>{{ "%.2f"|format(nota.peso) }}</td>
+                <td>{{ "%.2f"|format(nota.peso_carregado) }}</td>
+                <td>
+                    {% set saldo = nota.peso - nota.peso_carregado %}
+                    <span class="{% if saldo > 0 %}text-success{% else %}text-muted{% endif %} fw-bold">
+                        {{ "%.2f"|format(saldo) }}
+                    </span>
+                </td>
+                <td>{{ "%.2f"|format(nota.valor) }}</td>
+                <td>
+                    {% if nota.numero_cte %}
+                        <span class="badge bg-success">{{ nota.numero_cte }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ nota.data_carregamento[:16] if nota.data_carregamento else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#notasTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+        },
+        order: [[1, 'desc']],
+        pageLength: 25
+    });
+});
+</script>
+{% endblock %}

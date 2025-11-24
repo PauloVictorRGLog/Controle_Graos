@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Upload NFe - Sistema de Controle{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Upload de Nota Fiscal Eletrônica</h1>
+    <p class="page-subtitle">Carregue o arquivo XML da NFe para extração automática de dados</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="xml_file" class="form-label required">Arquivo XML da NFe</label>
+                        <input class="form-control" type="file" id="xml_file" name="xml_file" accept=".xml" required>
+                        <div class="form-text">Selecione um arquivo XML de nota fiscal eletrônica (NFe)</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4" id="btnUpload">
+                            <span class="material-icons" style="font-size: 18px;">cloud_upload</span>
+                            Enviar NFe
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('xml_file').value = ''">
+                            Limpar
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="uploadResult" class="mt-4"></div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Informações</h5>
+                <ul class="mb-0">
+                    <li>Apenas arquivos XML de NFe são aceitos</li>
+                    <li>Tamanho máximo: 16 MB</li>
+                    <li>Os dados serão extraídos automaticamente do XML</li>
+                    <li>Suporte para múltiplos encodings (UTF-8, ISO-8859-1, Latin-1, CP1252)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$('#uploadForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const btnUpload = $('#btnUpload');
+    
+    btnUpload.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processando...');
+    
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#uploadResult').html(`
+                <div class="alert alert-success">
+                    <h6 class="alert-heading">
+                        <span class="material-icons" style="font-size: 20px; vertical-align: middle;">check_circle</span>
+                        NFe Carregada com Sucesso!
+                    </h6>
+                    <p class="mb-2">${data.message}</p>
+                    <hr>
+                    <div class="small">
+                        <strong>Número:</strong> ${data.dados.numero_nota}<br>
+                        <strong>Data Emissão:</strong> ${data.dados.data_emissao}<br>
+                        <strong>Produto:</strong> ${data.dados.produto}<br>
+                        <strong>Peso:</strong> ${data.dados.peso.toFixed(2)} kg<br>
+                        <strong>Valor:</strong> R$ ${data.dados.valor.toFixed(2)}
+                    </div>
+                    <a href="/acompanhamento" class="btn btn-sm btn-outline-success mt-3">Ver Acompanhamento</a>
+                </div>
+            `);
+            $('#xml_file').val('');
+        } else {
+            $('#uploadResult').html(`
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">
+                        <span class="material-icons" style="font-size: 20px; vertical-align: middle;">error</span>
+                        Erro ao Processar NFe
+                    </h6>
+                    <p class="mb-0">${data.message}</p>
+                </div>
+            `);
+        }
+    })
+    .catch(error => {
+        $('#uploadResult').html(`
+            <div class="alert alert-danger">
+                <h6 class="alert-heading">Erro de Conexão</h6>
+                <p class="mb-0">Não foi possível enviar o arquivo. Tente novamente.</p>
+            </div>
+        `);
+        console.error(error);
+    })
+    .finally(() => {
+        btnUpload.prop('disabled', false).html('<span class="material-icons" style="font-size: 18px;">cloud_upload</span> Enviar NFe');
+    });
+});
+</script>
+{% endblock %}

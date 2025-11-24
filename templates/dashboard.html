@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Controle{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Visão geral do sistema</p>
+</div>
+
+<div class="mb-5">
+    <h5 class="mb-3 fw-bold">
+        <span class="material-icons" style="font-size: 24px; vertical-align: middle;">description</span>
+        Notas Fiscais
+    </h5>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <span class="material-icons">scale</span>
+                </div>
+                <div class="stat-value">{{ "%.2f"|format(stats_notas.entrada_peso) }} kg</div>
+                <div class="stat-label">Peso Total Entrada</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <span class="material-icons">attach_money</span>
+                </div>
+                <div class="stat-value">R$ {{ "%.2f"|format(stats_notas.entrada_valor) }}</div>
+                <div class="stat-label">Valor Total Entrada</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <span class="material-icons">local_shipping</span>
+                </div>
+                <div class="stat-value">{{ "%.2f"|format(stats_notas.saida_peso) }} kg</div>
+                <div class="stat-label">Peso Total Saída</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon gray">
+                    <span class="material-icons">inventory</span>
+                </div>
+                <div class="stat-value">{{ "%.2f"|format(stats_notas.saldo_peso) }} kg</div>
+                <div class="stat-label">Saldo em Estoque</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <h5 class="mb-3 fw-bold">
+        <span class="material-icons" style="font-size: 24px; vertical-align: middle;">inventory_2</span>
+        Containers
+    </h5>
+    <div class="row g-4">
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <span class="material-icons">apps</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.total }}</div>
+                <div class="stat-label">Total de Containers</div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <span class="material-icons">store</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.portaria }}</div>
+                <div class="stat-label">Na Portaria</div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <span class="material-icons">inventory</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.patio_cheio }}</div>
+                <div class="stat-label">Pátio Cheio</div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <span class="material-icons">construction</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.desova }}</div>
+                <div class="stat-label">Em Desova</div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon gray">
+                    <span class="material-icons">inbox</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.patio_vazio }}</div>
+                <div class="stat-label">Pátio Vazio</div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div class="stat-value">{{ stats_containers.liberado_saida }}</div>
+                <div class="stat-label">Liberado Saída</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Ações Rápidas</h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('upload') }}" class="btn btn-outline-primary text-start">
+                        <span class="material-icons" style="font-size: 18px; vertical-align: middle;">upload_file</span>
+                        Upload Nova NFe
+                    </a>
+                    <a href="{{ url_for('container_novo') }}" class="btn btn-outline-success text-start">
+                        <span class="material-icons" style="font-size: 18px; vertical-align: middle;">add_box</span>
+                        Registrar Novo Container
+                    </a>
+                    <a href="{{ url_for('saida') }}" class="btn btn-outline-warning text-start">
+                        <span class="material-icons" style="font-size: 18px; vertical-align: middle;">local_shipping</span>
+                        Registrar Saída de Mercadoria
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Status do Sistema</h5>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span>Banco de Dados</span>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span>Servidor Flask</span>
+                    <span class="badge bg-success">Executando</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Último Backup</span>
+                    <span class="text-muted small">Não configurado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Container - Sistema de Controle{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Novo Container</h1>
+    <p class="page-subtitle">Registrar entrada de container na portaria</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form id="formContainer" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="numero_container" class="form-label required">Número do Container</label>
+                            <input type="text" class="form-control" id="numero_container" name="numero_container" required placeholder="Ex: ABCD1234567">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="tipo" class="form-label required">Tipo</label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="20'">20' - 20 pés</option>
+                                <option value="40'">40' - 40 pés</option>
+                                <option value="40' HC">40' HC - 40 pés High Cube</option>
+                                <option value="45' HC">45' HC - 45 pés High Cube</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="armador" class="form-label required">Armador</label>
+                            <input type="text" class="form-control" id="armador" name="armador" required placeholder="Ex: Maersk">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="observacao" class="form-label">Observação</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3" placeholder="Informações adicionais (opcional)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <span class="material-icons" style="font-size: 18px;">save</span>
+                            Registrar Container
+                        </button>
+                        <a href="{{ url_for('containers') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$('#formContainer').on('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/containers/novo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '/containers/' + data.container_id;
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao registrar container');
+        console.error(error);
+    });
+});
+</script>
+{% endblock %}
