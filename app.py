@@ -122,6 +122,7 @@ def containers():
 @app.route('/containers/novo', methods=['GET', 'POST'])
 def container_novo():
     if request.method == 'POST':
+        numero_container = None
         try:
             numero_container = request.form.get('numero_container')
             tipo = request.form.get('tipo')
@@ -146,7 +147,8 @@ def container_novo():
         except Exception as e:
             error_msg = str(e)
             if 'UNIQUE constraint' in error_msg or 'unique' in error_msg.lower():
-                return jsonify({'success': False, 'message': f'Container {numero_container} já está cadastrado no sistema'}), 400
+                container_ref = numero_container if numero_container else 'desconhecido'
+                return jsonify({'success': False, 'message': f'Container {container_ref} já está cadastrado no sistema'}), 400
             return jsonify({'success': False, 'message': f'Erro ao registrar container: {error_msg}'}), 400
     
     return render_template('container_novo.html')

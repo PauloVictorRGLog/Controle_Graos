@@ -6,7 +6,7 @@
     <title>{% block title %}Sistema de Controle{% endblock %}</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="material">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
@@ -14,11 +14,75 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+        <span class="material-icons">menu</span>
+    </button>
+    
+    <button class="keyboard-shortcuts-btn" id="keyboardShortcutsBtn" aria-label="Atalhos de teclado" title="Atalhos de teclado (Alt+?)">
+        <span class="material-icons">keyboard</span>
+    </button>
+    
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <div class="keyboard-shortcuts-modal" id="keyboardShortcutsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Atalhos de Teclado</h5>
+                <button class="close-modal" id="closeShortcutsModal" aria-label="Fechar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>H</kbd>
+                        <span>Ir para Início</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>D</kbd>
+                        <span>Abrir Dashboard</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>U</kbd>
+                        <span>Upload NFe</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>A</kbd>
+                        <span>Acompanhamento</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>C</kbd>
+                        <span>Lista de Containers</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>N</kbd>
+                        <span>Novo Container</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt</kbd> + <kbd>M</kbd>
+                        <span>Alternar Menu (Mobile)</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Fechar Menu/Modal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="d-flex">
         <nav id="sidebar" class="sidebar bg-white border-end">
             <div class="sidebar-header p-4">
-                <h4 class="mb-0 fw-bold">Sistema Integrado</h4>
-                <small class="text-muted">Controle & Logística</small>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="mb-0 fw-bold">Sistema Integrado</h4>
+                        <small class="text-muted">Controle & Logística</small>
+                    </div>
+                    <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Fechar menu">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
             </div>
             
             <div class="sidebar-menu">
@@ -71,6 +135,15 @@
         
         <main class="main-content flex-grow-1">
             <div class="container-fluid px-4 py-4">
+                {% block breadcrumb %}
+                <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><span class="material-icons">home</span></a></li>
+                        {% block breadcrumb_items %}{% endblock %}
+                    </ol>
+                </nav>
+                {% endblock %}
+                
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
@@ -91,6 +164,133 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const mobileClose = document.getElementById('mobileCloseBtn');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            function openSidebar() {
+                sidebar.classList.add('show');
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeSidebar() {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', openSidebar);
+            }
+            
+            if (mobileClose) {
+                mobileClose.addEventListener('click', closeSidebar);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
+            }
+            
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+            
+            const shortcutsModal = document.getElementById('keyboardShortcutsModal');
+            const shortcutsBtn = document.getElementById('keyboardShortcutsBtn');
+            const closeShortcutsBtn = document.getElementById('closeShortcutsModal');
+            
+            function openShortcutsModal() {
+                shortcutsModal.classList.add('show');
+            }
+            
+            function closeShortcutsModal() {
+                shortcutsModal.classList.remove('show');
+            }
+            
+            if (shortcutsBtn) {
+                shortcutsBtn.addEventListener('click', openShortcutsModal);
+            }
+            
+            if (closeShortcutsBtn) {
+                closeShortcutsBtn.addEventListener('click', closeShortcutsModal);
+            }
+            
+            if (shortcutsModal) {
+                shortcutsModal.addEventListener('click', function(e) {
+                    if (e.target === shortcutsModal) {
+                        closeShortcutsModal();
+                    }
+                });
+            }
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey) {
+                    switch(e.key) {
+                        case 'h':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('index') }}";
+                            break;
+                        case 'd':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('dashboard') }}";
+                            break;
+                        case 'u':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('upload') }}";
+                            break;
+                        case 'a':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('acompanhamento') }}";
+                            break;
+                        case 'c':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('containers') }}";
+                            break;
+                        case 'n':
+                            e.preventDefault();
+                            window.location.href = "{{ url_for('container_novo') }}";
+                            break;
+                        case 'm':
+                            e.preventDefault();
+                            if (window.innerWidth < 768) {
+                                if (sidebar.classList.contains('show')) {
+                                    closeSidebar();
+                                } else {
+                                    openSidebar();
+                                }
+                            }
+                            break;
+                        case '?':
+                            e.preventDefault();
+                            openShortcutsModal();
+                            break;
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    if (shortcutsModal.classList.contains('show')) {
+                        closeShortcutsModal();
+                    } else if (sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    }
+                }
+            });
+            
+            document.querySelectorAll('a[href], button').forEach(element => {
+                element.setAttribute('tabindex', '0');
+            });
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>
